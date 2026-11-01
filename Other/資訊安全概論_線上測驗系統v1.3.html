@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資訊安全概論 期中考試題 線上測驗系統</title>
+    <!-- 引入 html2pdf.js 用於支援中文 PDF 匯出 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #0ea5e9;
+            --primary-hover: #0284c7;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", "Heiti TC", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .student-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .alert-box {
+            display: none;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: var(--danger-color);
+            border: 1px solid #fecaca;
+        }
+
+        .question-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 18px;
+            background: #fff;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .question-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .question-card.unanswered-error {
+            border: 2px solid var(--danger-color);
+            background: #fff5f5;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            white-space: pre-line;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .option-label:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .option-label input[type="radio"] {
+            margin-top: 4px;
+            transform: scale(1.15);
+            accent-color: var(--primary-color);
+        }
+
+        .actions {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+
+        .btn-secondary {
+            background-color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background-color: #334155;
+        }
+
+        /* 成績單樣式 */
+        #result-section {
+            display: none;
+            margin-top: 30px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 30px;
+        }
+
+        #report-card {
+            background: #ffffff;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 25px;
+        }
+
+        .report-header {
+            text-align: center;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .report-header h2 {
+            font-size: 1.6rem;
+            color: #1e293b;
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .score-highlight {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.95rem;
+        }
+
+        .report-table th, .report-table td {
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            text-align: center;
+        }
+
+        .report-table th {
+            background-color: #f1f5f9;
+            font-weight: 700;
+        }
+
+        .status-correct {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .status-wrong {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .student-info, .report-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>資訊安全概論 期中考試題</h1>
+        <p>一、選擇題（共 20 題，每題 2 分，合計 40 分）</p>
+    </header>
+
+    <div id="alert-box" class="alert-box alert-error"></div>
+
+    <!-- 成績單區塊 -->
+    <div id="result-section">
+        <div id="report-card">
+            <div class="report-header">
+                <h2>資訊安全概論 期中考試題 成績單</h2>
+                <p style="color:#64748b; font-size:0.9rem; margin-top:4px;">（本成績單僅顯示作答紀錄與批改結果，不公布標準答案）</p>
+            </div>
+            <div class="report-meta">
+                <div><strong>姓名：</strong><span id="res-name"></span></div>
+                <div><strong>學號：</strong><span id="res-id"></span></div>
+                <div><strong>測驗時間：</strong><span id="res-time"></span></div>
+                <div><strong>總分：</strong><span id="res-score" class="score-highlight"></span> / 40 分</div>
+                <div><strong>答對題數：</strong><span id="res-correct"></span> / 20 題</div>
+            </div>
+
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>題號</th>
+                        <th>您的作答</th>
+                        <th>結果</th>
+                        <th>得分</th>
+                    </tr>
+                </thead>
+                <tbody id="report-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <button type="button" class="btn btn-success" onclick="downloadTXT()">下載 TXT 成績單</button>
+            <button type="button" class="btn btn-secondary" onclick="downloadPDF()">下載 PDF 成績單</button>
+            <button type="button" class="btn" onclick="toggleQuestionsView()" id="toggle-q-btn">查看原試卷題目</button>
+        </div>
+    </div>
+
+    <!-- 測驗作答區 -->
+    <div id="quiz-area">
+        <div class="student-info">
+            <div class="form-group">
+                <label for="student-id">學號 (Student ID) *</label>
+                <input type="text" id="student-id" placeholder="請輸入學號">
+            </div>
+            <div class="form-group">
+                <label for="student-name">姓名 (Full Name) *</label>
+                <input type="text" id="student-name" placeholder="請輸入姓名">
+            </div>
+        </div>
+
+        <div id="questions-container"></div>
+
+        <div class="actions" id="submit-area">
+            <button type="button" class="btn" onclick="gradeQuiz()">提交試卷並結算成績</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 完整的 20 題資料與標準答案
+    var questionsData = [
+        { id: 1, title: "1. 資訊安全三原則(CIA triad)不包含下列哪一項？", options: { A: "機密性 (Confidentiality)", B: "完整性 (Integrity)", C: "可用性 (Availability)", D: "公平性 (Fairness)" }, ans: "D" },
+        { id: 2, title: "2. 根據資策會調查統計，資訊安全威脅來源中，比例最高(高達80%)的是下列哪一類？", options: { A: "外部人員", B: "環境因素", C: "內部人員(包含人為疏失與不誠信員工)", D: "天然災害" }, ans: "C" },
+        { id: 3, title: "3. 電子商務種類中，由消費者聚合需求的力量以引導商家提供合適服務或商品的模式(如集體採購)，稱為：", options: { A: "B2B", B: "B2C", C: "C2B", D: "C2C" }, ans: "C" },
+        { id: 4, title: "4. 下列何者是用於保護電子商務網頁傳輸安全，常使瀏覽器網址列顯示 https:// 的通訊協定？", options: { A: "FTP/SFTP", B: "SSL/TLS", C: "HTTP", D: "SMTP" }, ans: "B" },
+        { id: 5, title: "5. 依據火災分類，對於電器設備(如電線、電器等)起火，應使用下列哪一種滅火器材？", options: { A: "水", B: "乾粉", C: "二氧化碳或 FM-200 滅火器", D: "蘇打" }, ans: "C" },
+        { id: 6, title: "6. 針對電腦軟體之智慧財產權保護，下列敘述何者正確？", options: { A: "電腦軟體的發展功能可以作為著作權的保護對象", B: "員工受雇於公司所開發完成的軟體程式，其著作權屬於該員工", C: "電腦軟體著作僅保護其軟體的原始程式碼(source code)", D: "電腦軟體必須向政府機關申請註冊才能擁有著作權" }, ans: "C" },
+        { id: 7, title: "7. 我國制定的「電子簽章法」目前在技術上主要規範下列哪一項技術？", options: { A: "數位簽章(digital signature)", B: "密碼電子貨幣", C: "雙因子認證", D: "簡易電子郵件簽名" }, ans: "A" },
+        { id: 8, title: "8. 在密碼學發展歷史中，在哪一年由 Diffie 和 Hellman 兩人首先提出「非對稱金鑰演算法」的觀念？", options: { A: "1970年", B: "1976年", C: "1977年", D: "2001年" }, ans: "B" },
+        { id: 9, title: "9. 關於對稱式加密與非對稱式加密演算法的敘述，下列何者正確？", options: { A: "DES 與 AES 皆屬於非對稱金鑰演算法", B: "RSA 演算法屬於對稱金鑰演算法", C: "對稱金鑰演算法的加密與解密使用相同的金鑰", D: "非對稱金鑰演算法的加解密速度比對稱式演算法快許多" }, ans: "C" },
+        { id: 10, title: "10. 區塊鏈運作原理中，每個區塊通常會包含前一個區塊的什麼數值來確保鏈結的完整性？", options: { A: "亂數", B: "雜湊值(Hash value)", C: "授權碼", D: "員工編號" }, ans: "B" },
+        { id: 11, title: "11. 電腦作業系統中，若想採用以角色來分派權限，而不需對每個人逐一設定，這種存取控制方法稱為：", options: { A: "ACL (Access Control List)", B: "RBAC (Role-Based Access Control)", C: "DAC", D: "MAC" }, ans: "B" },
+        { id: 12, title: "12. 美國國防部國家電腦安全中心所提出的可信賴電腦系統評估準則(TCSEC)，俗稱為什麼書？", options: { A: "紅皮書", B: "橘皮書(Orange Book)", C: "藍皮書", D: "白皮書" }, ans: "B" },
+        { id: 13, title: "13. 在網際網路協定中，用來測試特定IP位址的主機是否存在，並利用 ICMP 協定發出 \"echo-request\" 的常用指令是：", options: { A: "Traceroute", B: "Ping", C: "Ipconfig", D: "Netstat" }, ans: "B" },
+        { id: 14, title: "14. 下列哪一種網路攻擊是利用 TCP 協定三向交握的弱點，發送大量未完成交握的 SYN 封包，導致伺服器資源耗盡？", options: { A: "UDP 泛洪攻擊", B: "Smurf 攻擊", C: "TCP 泛洪攻擊(TCP SYN flood attack)", D: "死亡之 Ping" }, ans: "C" },
+        { id: 15, title: "15. 關聯式資料庫中，用來辨識每一筆記錄(Tuple)以及與其他資料表建立關聯的欄位稱為：", options: { A: "外來鍵", B: "主鍵(Primary key)", C: "索引鍵", D: "屬性鍵" }, ans: "B" },
+        { id: 16, title: "16. 下列哪一種攻擊手法是利用網頁程式未對使用者輸入做妥善檢查，讓攻擊者在輸入欄位中夾帶 SQL 指令(如 'or 1=1--)，藉此非法存取資料庫？", options: { A: "緩衝區溢位攻擊", B: "資料隱碼攻擊(SQL Injection)", C: "中間人攻擊", D: "零時差攻擊" }, ans: "B" },
+        { id: 17, title: "17. 生物特徵認證中，合法使用者在認證時卻被錯誤地判斷為「失敗」，此種錯誤稱為：", options: { A: "Type I 錯誤(錯誤拒絕率, FRR)", B: "Type II 錯誤(錯誤接受率, FAR)", C: "交叉錯誤率(CER)", D: "系統誤判率" }, ans: "A" },
+        { id: 18, title: "18. 在系統存取控制管理中，開放給用戶帳號的權限應以足以完成工作所需即可，這項原則稱為：", options: { A: "必要知道原則", B: "最小權限原則(Principle of least privilege; POLP)", C: "責任區分原則", D: "強制存取原則" }, ans: "B" },
+        { id: 19, title: "19. 下列何者是 Windows 伺服器中負責架構中大型網路環境的集中式目錄管理服務？", options: { A: "RADIUS", B: "Active Directory (AD)", C: "DNS", D: "DHCP" }, ans: "B" },
+        { id: 20, title: "20. 資訊安全防範對策中，負責訂立安全管理政策、規範與程序，以及人員進用管理與機房管制程序的層面屬於：", options: { A: "管理層面", B: "技術層面", C: "實體層面", D: "法律層面" }, ans: "A" }
+    ];
+
+    var STORAGE_KEY = "infosec_midterm_quiz_records_v2";
+    var memoryRecords = [];
+    var currentReportData = null;
+
+    // 洗牌演算法 (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+        while (currentIndex !== 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+        return array;
+    }
+
+    // 初始化渲染並自動隨機打亂題目順序
+    function renderQuiz() {
+        // 複製一份陣列進行隨機排序
+        var shuffledQuestions = shuffleArray([...questionsData]);
+        var container = document.getElementById("questions-container");
+        var html = "";
+
+        shuffledQuestions.forEach(function(item, index) {
+            var displayNum = index + 1; // 顯示用的題號 (1~20)
+            var originalId = item.id;   // 原始題號，用來對應答案
+            
+            html += '<div class="question-card" id="card-q' + originalId + '" data-orig-id="' + originalId + '">';
+            html += '<div class="question-title">' + displayNum + '. ' + item.title.substring(item.title.indexOf('.') + 1) + '</div>';
+            html += '<div class="options-list">';
+            
+            for (var key in item.options) {
+                html += '<label class="option-label">';
+                html += '<input type="radio" name="q' + originalId + '" value="' + key + '">';
+                html += '<span>(' + key + ') ' + item.options[key] + '</span>';
+                html += '</label>';
+            }
+            
+            html += '</div></div>';
+        });
+
+        container.innerHTML = html;
+    }
+
+    function getRecords() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            return raw ? JSON.parse(raw) : memoryRecords;
+        } catch (err) {
+            return memoryRecords;
+        }
+    }
+
+    function saveTestRecord(studentId, studentName) {
+        var records = getRecords();
+        var newRec = {
+            id: studentId.trim().toLowerCase(),
+            name: studentName.trim().toLowerCase(),
+            timestamp: new Date().toISOString()
+        };
+        records.push(newRec);
+        memoryRecords = records;
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        } catch (err) {}
+    }
+
+    function isDuplicateTest(studentId, studentName) {
+        var records = getRecords();
+        var normId = studentId.trim().toLowerCase();
+        var normName = studentName.trim().toLowerCase();
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            if ((r.id === normId && r.name === normName) || r.id === normId || r.name === normName) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function showAlert(msg) {
+        var alertBox = document.getElementById("alert-box");
+        alertBox.textContent = msg;
+        alertBox.style.display = "block";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function gradeQuiz() {
+        var alertBox = document.getElementById("alert-box");
+        alertBox.style.display = "none";
+
+        var studentId = document.getElementById("student-id").value.trim();
+        var studentName = document.getElementById("student-name").value.trim();
+
+        if (!studentId || !studentName) {
+            showAlert("請先在上方完整填寫「學號」與「姓名」！");
+            document.getElementById("student-id").focus();
+            return;
+        }
+
+        // 檢查是否每題皆已作答
+        var unanswered = [];
+        for (var q = 1; q <= 20; q++) {
+            var card = document.getElementById("card-q" + q);
+            var checked = document.querySelector('input[name="q' + q + '"]:checked');
+            if (!checked) {
+                unanswered.push(q);
+                if (card) card.classList.add("unanswered-error");
+            } else {
+                if (card) card.classList.remove("unanswered-error");
+            }
+        }
+
+        if (unanswered.length > 0) {
+            showAlert("尚有題目未作答，請完成所有題目後再提交！");
+            var firstUnansweredCard = document.getElementById("card-q" + unanswered[0]);
+            if (firstUnansweredCard) {
+                firstUnansweredCard.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            return;
+        }
+
+        if (isDuplicateTest(studentId, studentName)) {
+            showAlert("警告：學號「" + studentId + "」或姓名「" + studentName + "」已經參加過本測驗，系統限制重複測試！");
+            return;
+        }
+
+        var score = 0;
+        var correctCount = 0;
+        var details = [];
+
+        // 建立標準答案對照表
+        var answerKey = {};
+        questionsData.forEach(function(item) {
+            answerKey[item.id] = item.ans;
+        });
+
+        for (var i = 1; i <= 20; i++) {
+            var selected = document.querySelector('input[name="q' + i + '"]:checked');
+            var userAns = selected ? selected.value : "未作答";
+            var isCorrect = (userAns === answerKey[i]);
+            var pts = isCorrect ? 2 : 0;
+            if (isCorrect) {
+                score += 2;
+                correctCount += 1;
+            }
+            details.push({
+                id: i,
+                userAns: userAns,
+                isCorrect: isCorrect,
+                pts: pts
+            });
+        }
+
+        saveTestRecord(studentId, studentName);
+
+        var inputs = document.querySelectorAll("#quiz-area input");
+        for (var j = 0; j < inputs.length; j++) {
+            inputs[j].disabled = true;
+        }
+        document.getElementById("submit-area").style.display = "none";
+
+        var nowStr = new Date().toLocaleString("zh-TW", { hour12: false });
+        currentReportData = {
+            studentId: studentId,
+            studentName: studentName,
+            time: nowStr,
+            score: score,
+            correctCount: correctCount,
+            details: details
+        };
+
+        document.getElementById("res-name").textContent = studentName;
+        document.getElementById("res-id").textContent = studentId;
+        document.getElementById("res-time").textContent = nowStr;
+        document.getElementById("res-score").textContent = score;
+        document.getElementById("res-correct").textContent = correctCount;
+
+        var tbody = document.getElementById("report-tbody");
+        var rowsHtml = "";
+        for (var k = 0; k < details.length; k++) {
+            var d = details[k];
+            rowsHtml += "<tr>" +
+                "<td>第 " + d.id + " 題</td>" +
+                "<td>" + d.userAns + "</td>" +
+                "<td class='" + (d.isCorrect ? "status-correct" : "status-wrong") + "'>" +
+                    (d.isCorrect ? "✔ 答對" : "✘ 答錯") +
+                "</td>" +
+                "<td>" + d.pts + " 分</td>" +
+            "</tr>";
+        }
+        tbody.innerHTML = rowsHtml;
+
+        document.getElementById("quiz-area").style.display = "none";
+        var resultSection = document.getElementById("result-section");
+        resultSection.style.display = "block";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function toggleQuestionsView() {
+        var quizArea = document.getElementById("quiz-area");
+        var btn = document.getElementById("toggle-q-btn");
+        if (quizArea.style.display === "none") {
+            quizArea.style.display = "block";
+            btn.textContent = "隱藏原試卷題目";
+        } else {
+            quizArea.style.display = "none";
+            btn.textContent = "查看原試卷題目";
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    }
+
+    function downloadTXT() {
+        if (!currentReportData) return;
+        var d = currentReportData;
+        var lines = [];
+        lines.push("==================================================");
+        lines.push("         資訊安全概論 期中考試題 成績單         ");
+        lines.push("==================================================");
+        lines.push("學生姓名：" + d.studentName);
+        lines.push("學生學號：" + d.studentId);
+        lines.push("測驗時間：" + d.time);
+        lines.push("測驗總分：" + d.score + " / 40 分 (答對 " + d.correctCount + " / 20 題)");
+        lines.push("--------------------------------------------------");
+        lines.push("題號\t您的作答\t批改結果\t得分");
+        lines.push("--------------------------------------------------");
+        for (var i = 0; i < d.details.length; i++) {
+            var item = d.details[i];
+            var qNum = item.id < 10 ? "0" + item.id : "" + item.id;
+            var status = item.isCorrect ? "答對" : "答錯";
+            lines.push("第" + qNum + "題\t   " + item.userAns + "\t\t  " + status + "\t\t " + item.pts + "分");
+        }
+        lines.push("==================================================");
+        lines.push("※ 備註：本成績單不顯示標準答案。");
+
+        var crlf = String.fromCharCode(13, 10);
+        var blob = new Blob([lines.join(crlf)], { type: "text/plain;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "資訊安全概論成績單_" + d.studentId + "_" + d.studentName + ".txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function downloadPDF() {
+        if (!currentReportData) return;
+        var d = currentReportData;
+        var element = document.getElementById("report-card");
+        if (typeof html2pdf !== "undefined") {
+            var opt = {
+                margin:       10,
+                filename:     "資訊安全概論成績單_" + d.studentId + "_" + d.studentName + ".pdf",
+                image:        { type: "jpeg", quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" }
+            };
+            html2pdf().set(opt).from(element).save();
+        } else {
+            window.print();
+        }
+    }
+
+    // 網頁載入時自動執行洗牌並渲染題目
+    window.onload = function() {
+        renderQuiz();
+    };
+</script>
+
+</body>
+</html>
